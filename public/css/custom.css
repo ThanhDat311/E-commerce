@@ -1,0 +1,58 @@
+/* Màu chủ đạo của web bạn (dựa trên ảnh) */
+:root {
+    --primary-color: #f28b00; /* Màu cam */
+    --primary-hover: #d97c00;
+}
+
+/* Tùy chỉnh Bootstrap */
+.text-primary {
+    color: var(--primary-color) !important;
+}
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+/* Thiết kế lại phần Payment Method hiện đại hơn */
+.payment-option-group .list-group-item {
+    border: 2px solid #e9ecef;
+    margin-bottom: 0.75rem;
+    border-radius: 0.5rem !important;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+/* Khi radio được checked, đổi màu border của thẻ cha */
+.btn-check:checked + .list-group-item {
+    border-color: var(--primary-color);
+    background-color: #fffaf0; /* Màu nền cam nhạt */
+}
+
+.payment-icon {
+    font-size: 1.5rem;
+    color: #6c757d;
+}
+.btn-check:checked + .list-group-item .payment-icon {
+    color: var(--primary-color);
+}
+
+/* Sticky Sidebar cho Desktop */
+@media (min-width: 992px) {
+    .checkout-summary-sticky {
+        position: sticky;
+        top: 2rem; /* Cách đỉnh màn hình một chút khi cuộn */
+        z-index: 10;
+    }
+}
+
+/* Ảnh sản phẩm nhỏ trong summary */
+.checkout-product-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+}
