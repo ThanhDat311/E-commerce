@@ -1,60 +1,40 @@
 <?php
 
-use App\Http\Controllers\CartController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// --- NHÓM 1: TRANG CHỦ & THÔNG TIN (HomeController) ---
-Route::controller(HomeController::class)->group(function () {
-    Route::get('/', 'index')->name('home');
-    Route::get('/contact', 'contact')->name('contact');
+Route::get('/product/{id}', [ShopController::class, 'show'])->name('product.detail');
+
+Route::group(['prefix' => 'cart', 'as' => 'cart.'], function () {
+    Route::get('/', [CartController::class, 'index'])->name('index'); // Tên đầy đủ là cart.index
+    Route::get('/add/{id}', [CartController::class, 'addToCart'])->name('add'); // Tên đầy đủ là cart.add
 });
 
-// --- NHÓM 2: CỬA HÀNG & SẢN PHẨM (ShopController) ---
-Route::controller(ShopController::class)->group(function () {
-    Route::get('/shop', 'index')->name('shop');
-    Route::get('/product/{id}', 'show')->name('product.detail');
+Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// --- NHÓM 3: GIỎ HÀNG (CartController) - Cấu trúc Cha/Con ---
-// Tất cả các route trong này sẽ có:
-// 1. URL bắt đầu bằng: /cart/... (trừ khi định nghĩa lại)
-// 2. Tên Route bắt đầu bằng: cart....
-Route::controller(CartController::class)
-    ->prefix('cart')           // Tiền tố URL (Cha)
-    ->name('cart.')            // Tiền tố Name (Cha)
-    ->group(function () {      // Các route Con
+Route::middleware(['auth'])->group(function () {
+    // Danh sách đơn hàng
+    Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.index');
+    
+    // Chi tiết đơn hàng
+    Route::get('/my-orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+    
+});
 
-        // URL: /cart
-        // Name: cart.index
-        Route::get('/', 'index')->name('index');
-
-        // URL: /cart/add/{id}  <-- Đã đổi từ /add-to-cart thành /cart/add cho đúng chuẩn
-        // Name: cart.add
-        Route::get('/add/{id}', 'addToCart')->name('add');
-
-        // URL: /cart/remove/{id}
-        // Name: cart.remove
-        Route::get('/remove/{id}', 'remove')->name('remove');
-
-        // URL: /cart/update/{id}/{quantity}
-        // Name: cart.update
-        Route::get('/update/{id}/{quantity}', 'update')->name('update');
-
-        // URL: /cart/checkout  <-- Gom vào nhóm cart luôn
-        // Name: cart.checkout
-        Route::get('/checkout', 'checkout')->name('checkout');
-
-        // URL: /cart/place-order (Phương thức POST để gửi form)
-        Route::post('/place-order', 'placeOrder')->name('placeOrder');
-
-        // URL: /cart/order-success (Trang cảm ơn)
-        Route::get('/order-success', 'orderSuccess')->name('orderSuccess');
-    });
+require __DIR__.'/auth.php';
