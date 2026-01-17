@@ -14,7 +14,7 @@
                         <div class="col-xl-6 carousel-content p-4">
                             <h4 class="text-uppercase fw-bold mb-4 wow fadeInRight" data-wow-delay="0.1s" style="letter-spacing: 3px;">Save Up To A $400</h4>
                             <h1 class="display-3 text-capitalize mb-4 wow fadeInRight" data-wow-delay="0.3s">On Selected Laptops & Desktop</h1>
-                            <a class="btn btn-primary rounded-pill py-3 px-5 wow fadeInRight" data-wow-delay="0.7s" href="#">Shop Now</a>
+                            <a class="btn btn-primary rounded-pill py-3 px-5 wow fadeInRight" data-wow-delay="0.7s" href="{{route('shop')}}">Shop Now</a>
                         </div>
                     </div>
                 </div>

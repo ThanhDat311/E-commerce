@@ -21,11 +21,13 @@
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
 
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
-    
+
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
-    
+
     @stack('styles')
 </head>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <body>
 
@@ -48,7 +50,11 @@
     <script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
 
     <script src="{{ asset('js/main.js') }}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    @include('partials.toast')
+
     @stack('scripts')
 </body>
 

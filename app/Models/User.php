@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Order;
 
 class User extends Authenticatable
 {
@@ -62,11 +63,6 @@ class User extends Authenticatable
     {
         return $this->hasMany(ProductRating::class);
     }
-
-
-    /* =====================
-        RBAC HELPERS
-    ====================== */
 
     public function hasPermission(string $permissionSlug): bool
     {

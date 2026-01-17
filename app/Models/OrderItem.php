@@ -2,15 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'order_id',
         'product_id',
+        'product_name', // Mới thêm
         'quantity',
-        'unit_price',
+        'price',        // Đổi từ unit_price -> price
+        'total'         // Mới thêm
     ];
 
     public function order()

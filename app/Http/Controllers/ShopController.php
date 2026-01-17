@@ -60,37 +60,53 @@ class ShopController extends Controller
     }
 
     /**
-     * Hiển thị chi tiết sản phẩm
+     * Hiển thị chi tiết sản phẩm với Gợi ý Thông minh
      */
     public function show($id)
     {
-        // 1. Tìm sản phẩm trong DB theo ID
-        // findOrFail: Nếu không tìm thấy id sẽ tự động trả về trang lỗi 404
+        // 1. Tìm sản phẩm hiện tại
         $product = Product::findOrFail($id);
 
-        // 2. Lấy sản phẩm liên quan (Cùng danh mục, khác ID hiện tại)
-        $relatedProducts = Product::where('category', $product->category)
-            ->where('id', '!=', $id)
+        // 2. [SMART LOGIC] Tìm sản phẩm liên quan
+        // Logic: Cùng danh mục + Giá nằm trong khoảng chênh lệch 30%
+        $minPrice = $product->price * 0.7; // 70% giá
+        $maxPrice = $product->price * 1.3; // 130% giá
+
+        $relatedProducts = Product::where('category_id', $product->category_id) // Cùng Category
+            ->where('id', '!=', $id) // Trừ chính nó ra
+            ->whereBetween('price', [$minPrice, $maxPrice]) // Lọc theo phân khúc giá
+            ->inRandomOrder() // Đảo ngẫu nhiên để tăng trải nghiệm khám phá
             ->take(4)
             ->get();
 
-        // 3. Dữ liệu cho Sidebar (Copy từ hàm index để sidebar hiển thị đầy đủ)
+        // [FALLBACK] Nếu logic trên ra ít hơn 4 sản phẩm (do lọc giá quá kỹ)
+        // Thì nới lỏng điều kiện: Chỉ cần cùng danh mục
+        if ($relatedProducts->count() < 4) {
+            $moreProducts = Product::where('category_id', $product->category_id)
+                ->where('id', '!=', $id)
+                ->whereNotIn('id', $relatedProducts->pluck('id')) // Không lấy trùng
+                ->take(4 - $relatedProducts->count())
+                ->get();
+            
+            // Gộp lại cho đủ danh sách
+            $relatedProducts = $relatedProducts->merge($moreProducts);
+        }
+
+        // 3. Dữ liệu Sidebar (Giữ nguyên code cũ của bạn hoặc Refactor sau)
         $categories = [
             ['id' => 1, 'name' => 'Accessories', 'count' => 3],
             ['id' => 2, 'name' => 'Electronics', 'count' => 5],
-            ['id' => 3, 'name' => 'Laptops', 'count' => 2],
-            ['id' => 4, 'name' => 'Mobiles', 'count' => 8],
+            // ... (Code cũ)
         ];
+        $colors = [['name' => 'Gold', 'count' => 1], ['name' => 'White', 'count' => 1]];
 
-        $colors = [
-            ['name' => 'Gold', 'count' => 1],
-            ['name' => 'White', 'count' => 1],
-        ];
+        $product = Product::with(['category', 'reviews.user'])->findOrFail($id);
 
-        // Sản phẩm nổi bật cho sidebar trang chi tiết
-        $featuredProducts = Product::where('rating', 5)->take(3)->get();
+        $featuredProducts = Product::withAvg('ratings', 'rating')
+                    ->orderByDesc('ratings_avg_rating') // Sắp xếp điểm cao nhất xuống
+                    ->take(3)
+                    ->get(); 
 
-        // 4. Truyền sang View
         return view('detail', compact('product', 'relatedProducts', 'categories', 'colors', 'featuredProducts'));
     }
 }
