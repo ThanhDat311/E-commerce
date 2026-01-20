@@ -3,20 +3,30 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class Product extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'category_id',
         'name',
         'sku',
         'price',
         'sale_price',
-        'stock_quantity',
+        'stock_quantity', 
         'image_url',
         'is_new',
         'is_featured',
         'description',
+    ];
+
+    // --- THÊM ĐOẠN NÀY ---
+    protected $casts = [
+        'is_new' => 'boolean',     
+        'is_featured' => 'boolean', 
     ];
 
     public function category()

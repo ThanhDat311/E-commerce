@@ -3,25 +3,30 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    // Danh sách đơn hàng của tôi
-    public function index()
+    // Danh sách đơn hàng của người dùng đang đăng nhập
+    public function index(Request $request)
     {
-        // Lấy đơn hàng của user đang đăng nhập, mới nhất lên đầu, phân trang 5 đơn
-        $orders = Auth::user()->orders()->with('items.product')->latest()->paginate(5);
-        
+        // Lấy đơn hàng của user hiện tại, sắp xếp mới nhất
+        $orders = Order::where('user_id', Auth::id())
+                        ->orderBy('created_at', 'desc')
+                        ->paginate(10);
+
         return view('orders.index', compact('orders'));
     }
 
-    // Chi tiết một đơn hàng cụ thể
+    // Xem chi tiết đơn hàng (Cần kiểm tra chính chủ)
     public function show($id)
     {
-        // Tìm đơn hàng của user này (findOrFail để bảo mật, không cho xem đơn người khác)
-        $order = Auth::user()->orders()->with('items.product')->findOrFail($id);
-        
+        $order = Order::with('orderItems.product')
+                    ->where('id', $id)
+                    ->where('user_id', Auth::id()) // Bảo mật: Chỉ xem được đơn của chính mình
+                    ->firstOrFail();
+
         return view('orders.show', compact('order'));
     }
 }

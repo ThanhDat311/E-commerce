@@ -17,4 +17,14 @@ class OrderRepository implements OrderRepositoryInterface
     {
         return OrderItem::create($data);
     }
+
+    // Thực thi hàm getAllOrders
+    public function getAllOrders($perPage = 10)
+    {
+        // Sử dụng Eager Loading 'items' và 'aiFeature' như logic cũ của Controller để tối ưu query
+        // latest() để lấy đơn mới nhất trước
+        return Order::with(['items', 'aiFeature'])
+                    ->latest()
+                    ->paginate($perPage);
+    }
 }

@@ -32,11 +32,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($cartItems as $item)
+                            @forelse($cartItems as $id => $item)
                             <tr>
                                 <th scope="row">
                                     <div class="d-flex align-items-center">
-                                        <img src="{{ asset($item['image']) }}" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="{{ $item['name'] }}">
+                                        <img src="{{ asset($item['image'] ?? 'img/no-image.png') }}" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="{{ $item['name'] ?? 'Product' }}">
                                     </div>
                                 </th>
                                 <td>
@@ -65,9 +65,13 @@
                                     <p class="mb-0 mt-4">${{ number_format($item['price'] * $item['quantity'], 2) }}</p>
                                 </td>
                                 <td>
-                                    <a href="{{ route('cart.remove', ['id' => $item['id']]) }}" class="btn btn-md rounded-circle bg-light border mt-4" onclick="return confirm('Bạn có chắc muốn xóa?')">
-                                        <i class="fa fa-times text-danger"></i>
-                                    </a>
+                                    <form action="{{ route('cart.remove', $id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i> Remove
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                             @empty

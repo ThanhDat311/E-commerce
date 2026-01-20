@@ -17,11 +17,31 @@ class Order extends Model
         'phone',
         'address',
         'note',
-        'order_status',
+        'order_status',   
         'payment_status',
         'payment_method',
-        'total', // Đã đổi từ total_amount sang total
+        'total'
     ];
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function histories()
+    {
+        return $this->hasMany(OrderHistory::class)->orderBy('created_at', 'desc');
+    }
+
+    public function getStatusAttribute()
+    {
+        return $this->order_status;
+    }
+    
+    public function getTotalPriceAttribute()
+    {
+        return $this->total;
+    }
 
     public function user()
     {

@@ -3,24 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Services\CartService;
-use App\Services\OrderService; // Đừng quên import
+use App\Services\OrderService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // Import Auth để dùng Auth::id()
+use App\Http\Requests\CheckoutRequest;
+use Illuminate\Support\Facades\Auth; // Đảm bảo có dòng này
 
 class CartController extends Controller
 {
-    // FIX LỖI 2: Khai báo Property
     protected $cartService;
     protected $orderService;
 
-    // FIX LỖI 2: Inject cả 2 Service vào đây
     public function __construct(CartService $cartService, OrderService $orderService)
     {
         $this->cartService = $cartService;
         $this->orderService = $orderService;
     }
-
-    // ... (Giữ nguyên các hàm index, addToCart, remove...)
 
     public function index()
     {
@@ -30,10 +27,7 @@ class CartController extends Controller
 
     public function addToCart(Request $request, $id)
     {
-        // Lấy số lượng từ URL (mặc định là 1 nếu không truyền)
         $quantity = $request->input('quantity', 1);
-
-        // Gọi Service xử lý
         $result = $this->cartService->addToCart($id, (int)$quantity);
 
         if (!$result['status']) {
@@ -52,27 +46,25 @@ class CartController extends Controller
     public function checkout()
     {
         $data = $this->cartService->getCartDetails();
-        if (count($data['cartItems']) == 0) {
-            return redirect()->route('shop');
+
+        if (empty($data['cartItems'])) {
+            return redirect()->route('shop')->with('error', 'Giỏ hàng trống!');
         }
+
         return view('checkout', $data);
     }
 
-    public function placeOrder(Request $request)
+    public function placeOrder(CheckoutRequest $request)
     {
-        $request->validate([
-            'first_name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'phone' => 'required|string',
-            'address' => 'required|string',
-        ]);
-
         try {
-            $this->orderService->processCheckout($request->all(), Auth::id());
-            return redirect()->route('cart.orderSuccess')->with('success', 'Order placed successfully!');
+            // [FIXED] Sửa auth()->id() thành Auth::id() để tránh lỗi Intelephense
+            $this->orderService->processCheckout($request->validated(), Auth::id());
+
+            $this->cartService->clearCart();
+
+            return redirect()->route('cart.orderSuccess')->with('success', 'Đơn hàng đã được đặt thành công!');
         } catch (\Exception $e) {
-            dd($e->getMessage());
-            return redirect()->back()->with('error', 'Checkout failed. Please try again.');
+            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
     }
 
