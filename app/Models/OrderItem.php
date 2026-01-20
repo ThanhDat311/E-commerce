@@ -12,10 +12,10 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'product_id',
-        'product_name', // Mới thêm
+        'product_name', 
         'quantity',
-        'price',        // Đổi từ unit_price -> price
-        'total'         // Mới thêm
+        'price',
+        'total'
     ];
 
     public function order()
@@ -26,5 +26,10 @@ class OrderItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function histories()
+    {
+        return $this->hasMany(OrderHistory::class)->orderBy('created_at', 'desc');
     }
 }

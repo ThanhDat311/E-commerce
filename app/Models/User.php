@@ -15,19 +15,16 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'phone_number',
-        'role_id',
+        'role_id', 
         'status',
+        'phone',
+        'address',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
-
-    /* =====================
-        RELATIONSHIPS
-    ====================== */
 
     public function role()
     {
@@ -71,8 +68,16 @@ class User extends Authenticatable
             ->contains('slug', $permissionSlug);
     }
 
-    public function isAdmin(): bool
+    public function isAdmin()
     {
-        return $this->role?->name === 'Admin';
+        if ($this->role === 'admin') {
+            return true;
+        }
+
+        if ($this->role_id === 1) {
+            return true;
+        }
+
+        return false;
     }
 }

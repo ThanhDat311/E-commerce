@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Repositories\Interfaces\OrderRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Services\RiskManagementService;
 use App\Models\AiFeatureStore;
 use Exception;
 
@@ -18,16 +17,16 @@ class OrderService
     public function __construct(
         OrderRepositoryInterface $orderRepository,
         CartService $cartService,
-        RiskManagementService $riskService
+        RiskManagementService $riskService 
     ) {
         $this->orderRepository = $orderRepository;
         $this->cartService = $cartService;
         $this->riskService = $riskService;
     }
 
-    // FIX LỖI 1: Thêm dấu ? vào trước int
     public function processCheckout(array $customerData, ?int $userId = null)
     {
+        // 1. Lấy dữ liệu giỏ hàng live từ DB để đảm bảo giá cả chính xác
         $cartData = $this->cartService->getCartDetails();
         $cartItems = $cartData['cartItems'];
 
@@ -35,65 +34,73 @@ class OrderService
             throw new Exception("Cart is empty");
         }
 
-        // --- NEW: AI RISK CHECK (Bước kiểm tra an ninh) ---
-        // Gộp data để check
+        // --- CHECK RỦI RO (AI RISK MANAGEMENT) ---
         $dataToCheck = array_merge($customerData, ['total' => $cartData['total']]);
-
+        
+        // Gọi service check rủi ro
         $riskAnalysis = $this->riskService->assessOrderRisk($dataToCheck, $userId);
 
+        // Nếu bị chặn thì throw Exception ngay
         if (!$riskAnalysis['allowed']) {
-            throw new Exception("Security Alert: Transaction blocked... Reason: {$riskAnalysis['reason']}");
+            throw new Exception("Security Alert: Transaction blocked. Reason: {$riskAnalysis['reason']}");
         }
-        // --------------------------------------------------
+        // -----------------------------------------
 
-        // 2. Bắt đầu Transaction
         DB::beginTransaction();
 
         try {
-
+            // Chuẩn bị data để tạo Order
             $orderData = [
-                'user_id' => $userId,
-                'first_name' => $customerData['first_name'],
-                'last_name' => $customerData['last_name'] ?? '',
-                'email' => $customerData['email'],
-                'phone' => $customerData['phone'],
-                'address' => $customerData['address'],
-                'note' => $customerData['note'] ?? null,
-                'total' => $cartData['total'],
-                'status' => 'pending',
-                'payment_method' => 'cod'
+                'user_id'        => $userId,
+                'first_name'     => $customerData['first_name'],
+                'last_name'      => $customerData['last_name'] ?? '',
+                'email'          => $customerData['email'],
+                'phone'          => $customerData['phone'],
+                'address'        => $customerData['address'],
+                'note'           => $customerData['note'] ?? null,
+                'total'          => $cartData['total'],
+                
+                // [FIXED] Sửa 'status' thành 'order_status' để khớp với Model & DB
+                'order_status'   => 'pending', 
+                
+                'payment_method' => $customerData['payment_method'] ?? 'cod', // Lấy từ form hoặc mặc định COD
+                'payment_status' => 'unpaid' // Nên set rõ ràng
             ];
 
+            // Tạo Order Master
             $order = $this->orderRepository->createOrder($orderData);
 
+            // Tạo Order Items (Chi tiết đơn hàng)
             foreach ($cartItems as $item) {
                 $this->orderRepository->createOrderItem([
-                    'order_id' => $order->id, // Model dùng property ->id, không phải method ->id()
-                    'product_id' => $item['id'],
+                    'order_id'     => $order->id,
+                    'product_id'   => $item['id'],
                     'product_name' => $item['name'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'total' => $item['price'] * $item['quantity']
+                    'quantity'     => $item['quantity'],
+                    'price'        => $item['price'],
+                    'total'        => $item['price'] * $item['quantity']
                 ]);
             }
 
-            // --- NEW: CẬP NHẬT LOG AI ---
-            // Nếu có log_id, hãy cập nhật order_id vào bảng ai_feature_store
+            // --- CẬP NHẬT LOG AI (Gắn order_id vào log đã ghi trước đó) ---
             if (!empty($riskAnalysis['log_id'])) {
                 AiFeatureStore::where('id', $riskAnalysis['log_id'])->update([
                     'order_id' => $order->id
                 ]);
             }
-            // -----------------------------
+            // -------------------------------------------------------------
 
             DB::commit();
-            $this->cartService->clearCart();
-            return $order;
             
+            // Xóa giỏ hàng sau khi đặt thành công
+            $this->cartService->clearCart();
+            
+            return $order;
+
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("Checkout Failed: " . $e->getMessage());
-            throw $e;
+            throw $e; // Ném lỗi ra để Controller bắt được và hiển thị cho user
         }
     }
 }
