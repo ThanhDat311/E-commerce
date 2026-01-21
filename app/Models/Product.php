@@ -16,7 +16,7 @@ class Product extends Model
         'sku',
         'price',
         'sale_price',
-        'stock_quantity', 
+        'stock_quantity',
         'image_url',
         'is_new',
         'is_featured',
@@ -25,8 +25,8 @@ class Product extends Model
 
     // --- THÊM ĐOẠN NÀY ---
     protected $casts = [
-        'is_new' => 'boolean',     
-        'is_featured' => 'boolean', 
+        'is_new' => 'boolean',
+        'is_featured' => 'boolean',
     ];
 
     public function category()
@@ -52,5 +52,10 @@ class Product extends Model
     public function averageRating()
     {
         return round($this->ratings()->avg('rating'), 1);
+    }
+
+    public function vendor()
+    {
+        return $this->belongsTo(User::class, 'vendor_id');
     }
 }

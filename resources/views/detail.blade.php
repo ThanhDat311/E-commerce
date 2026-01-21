@@ -9,7 +9,7 @@
     <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Product Detail</h1>
     <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
         <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('shop') }}">Shop</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('shop.index') }}">Shop</a></li>
         <li class="breadcrumb-item active text-white">{{ $product->name }}</li>
     </ol>
 </div>

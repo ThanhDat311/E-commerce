@@ -56,3 +56,90 @@
     object-fit: cover;
     border-radius: 8px;
 }
+
+/* Tạo khung chứa có chiều cao cố định và thanh cuộn */
+.product-scroll-container {
+    max-height: 950px; /* Điều chỉnh số này khớp với chiều cao 2 hàng sản phẩm của bạn */
+    overflow-y: auto; /* Chỉ hiện thanh cuộn khi nội dung tràn */
+    overflow-x: hidden; /* Ẩn thanh cuộn ngang */
+    padding-right: 10px; /* Đệm để nội dung không dính sát thanh cuộn */
+
+    /* Hiệu ứng mượt mà */
+    scroll-behavior: smooth;
+}
+
+/* Tùy chỉnh thanh cuộn cho đẹp (Webkit browsers: Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Màu đậm hơn khi di chuột vào thanh cuộn */
+}
+
+/* ============================================================
+   FIX XUNG ĐỘT PAGINATION (PHÂN TRANG) & STYLE THEO THEME
+   ============================================================ */
+
+/* 1. Ép buộc khung phân trang nằm ngang và căn giữa */
+.pagination {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 20px;
+    flex-wrap: wrap; /* Tránh vỡ giao diện trên mobile */
+}
+
+/* 2. Style cho từng ô số trang */
+.pagination .page-link {
+    color: #333; /* Màu chữ thường */
+    border: 1px solid #dee2e6;
+    margin: 0 3px; /* Tạo khoảng cách giữa các nút */
+    border-radius: 4px !important; /* Bo góc nhẹ */
+    padding: 8px 16px; /* Kích thước nút */
+    transition: all 0.3s ease;
+    text-decoration: none;
+    background-color: #fff;
+}
+
+/* 3. Hiệu ứng khi di chuột vào (Hover) */
+.pagination .page-link:hover {
+    color: var(--primary-color); /* Chữ màu cam */
+    background-color: #fffaf0; /* Nền cam nhạt */
+    border-color: var(--primary-color);
+    z-index: 2;
+}
+
+/* 4. Trạng thái Active (Trang đang xem) */
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color) !important; /* Nền cam */
+    border-color: var(--primary-color) !important;
+    color: white !important; /* Chữ trắng */
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(242, 139, 0, 0.3); /* Bóng đổ nhẹ cho đẹp */
+}
+
+/* 5. Trạng thái Disabled (Nút không bấm được) */
+.pagination .page-item.disabled .page-link {
+    color: #ccc;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+}
+
+/* 6. Fix lỗi icon mũi tên bị to hoặc lệch */
+.pagination .page-link span {
+    font-size: 1.1rem;
+    line-height: 1;
+}

@@ -8,6 +8,7 @@ use App\Repositories\Interfaces\ProductRepositoryInterface;
 use App\Repositories\Eloquent\ProductRepository;
 use App\Repositories\Interfaces\OrderRepositoryInterface;
 use App\Repositories\Eloquent\OrderRepository;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
         Auth::viaRemember(function ($user) {
             return $user->load('role.permissions');
         });

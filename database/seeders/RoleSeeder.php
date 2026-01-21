@@ -25,6 +25,11 @@ class RoleSeeder extends Seeder
                 'name' => 'Customer',
                 'description' => 'End User / Buyer',
             ],
+            [
+                'id' => 4,
+                'name' => 'Vendor',
+                'description' => 'Shop Owner / Seller'
+            ],
         ]);
     }
 }

@@ -8,23 +8,40 @@ use App\Repositories\Interfaces\OrderRepositoryInterface;
 
 class OrderRepository implements OrderRepositoryInterface
 {
+    /**
+     * Tạo đơn hàng mới
+     */
     public function createOrder(array $data)
     {
         return Order::create($data);
     }
 
+    /**
+     * Tạo chi tiết đơn hàng (Order Item)
+     */
     public function createOrderItem(array $data)
     {
         return OrderItem::create($data);
     }
 
-    // Thực thi hàm getAllOrders
+    /**
+     * Lấy danh sách đơn hàng (Phân trang)
+     */
     public function getAllOrders($perPage = 10)
     {
-        // Sử dụng Eager Loading 'items' và 'aiFeature' như logic cũ của Controller để tối ưu query
-        // latest() để lấy đơn mới nhất trước
-        return Order::with(['items', 'aiFeature'])
-                    ->latest()
-                    ->paginate($perPage);
+        return Order::latest()->paginate($perPage);
+    }
+
+    /**
+     * Tìm đơn hàng theo ID
+     */
+    public function find($id)
+    {
+        return Order::findOrFail($id);
+    }
+    
+    public function getProductsByVendor($vendorId, $perPage = 10)
+    {
+        return []; 
     }
 }
