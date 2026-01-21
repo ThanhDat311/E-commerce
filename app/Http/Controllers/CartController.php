@@ -57,10 +57,7 @@ class CartController extends Controller
     public function placeOrder(CheckoutRequest $request)
     {
         try {
-            // [FIXED] Sửa auth()->id() thành Auth::id() để tránh lỗi Intelephense
             $this->orderService->processCheckout($request->validated(), Auth::id());
-
-            $this->cartService->clearCart();
 
             return redirect()->route('cart.orderSuccess')->with('success', 'Đơn hàng đã được đặt thành công!');
         } catch (\Exception $e) {

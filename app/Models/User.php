@@ -15,7 +15,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role_id', 
+        'role_id',
         'status',
         'phone',
         'address',
@@ -79,5 +79,15 @@ class User extends Authenticatable
         }
 
         return false;
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'vendor_id');
+    }
+
+    public function isVendor()
+    {
+        return $this->role === 'vendor' || $this->hasRole('vendor');
     }
 }

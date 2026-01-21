@@ -28,15 +28,13 @@ return new class extends Migration
         });
 
         // Tạo bảng lịch sử (giữ nguyên)
-        if (!Schema::hasTable('order_histories')) {
-            Schema::create('order_histories', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('order_id')->constrained()->onDelete('cascade');
-                $table->foreignId('user_id')->nullable()->constrained();
-                $table->string('action');
-                $table->text('description')->nullable();
-                $table->timestamps();
-            });
-        }
+        Schema::create('order_histories', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_id')->constrained()->onDelete('cascade'); // Liên kết với bảng orders
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // Liên kết với user thực hiện
+            $table->string('action'); // Ví dụ: "Update Status"
+            $table->text('description')->nullable(); // Chi tiết thay đổi
+            $table->timestamps(); // create_at, updated_at
+        });
     }
 };

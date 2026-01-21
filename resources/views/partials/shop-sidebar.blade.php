@@ -1,107 +1,66 @@
-{{-- Bắt đầu Form Lọc --}}
-<form action="{{ route('shop') }}" method="GET">
-    
-    {{-- 1. Categories (Giữ nguyên hoặc chuyển thành checkbox nếu muốn) --}}
-    <div class="product-categories mb-4">
-        <h4>Products Categories</h4>
-        <ul class="list-unstyled">
-            @if(isset($categories) && count($categories) > 0)
-                @foreach($categories as $category)
-                <li>
-                    <div class="categories-item">
-                        <a href="{{ route('shop', ['category' => $category['id'] ?? $category['name']]) }}" class="text-dark">
-                            <i class="fas fa-apple-alt text-secondary me-2"></i> {{ $category['name'] }}
-                        </a>
-                        <span>({{ $category['count'] }})</span>
-                    </div>
-                </li>
-                @endforeach
+<div class="shop-sidebar">
+    <div class="mb-4 pb-4 border-bottom">
+        <h4 class="mb-3">Bộ lọc & Tìm kiếm</h4>
+        
+        <form action="{{ route('shop.index') }}" method="GET">
+            {{-- Giữ lại category_id nếu đang chọn (để không bị mất khi lọc giá) --}}
+            @if(request('category'))
+                <input type="hidden" name="category" value="{{ request('category') }}">
             @endif
-        </ul>
-    </div>
 
-    {{-- 2. Price Filter (Giữ nguyên) --}}
-    <div class="price mb-4">
-        <h4 class="mb-2">Price</h4>
-        <input type="range" class="form-range w-100" id="rangeInput" name="price" min="0" max="2000" 
-               value="{{ request('price', 0) }}" oninput="amount.value=rangeInput.value">
-        <div class="d-flex justify-content-between">
-            <output id="amount" name="amount" for="rangeInput">{{ request('price', 0) }}</output>
-            <span>$2000</span>
-        </div>
-    </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Tìm kiếm:</label>
+                <div class="input-group">
+                    <input type="text" name="keyword" class="form-control" placeholder="Tên sản phẩm..." value="{{ request('keyword') }}">
+                    <button class="btn btn-primary" type="submit"><i class="fa fa-search"></i></button>
+                </div>
+            </div>
 
-    {{-- 3. Select By Color (Đã chuyển thành CHECKBOX) --}}
-    <div class="product-color mb-3">
-        <h4>Select By Color</h4>
-        <ul class="list-unstyled">
-            @if(isset($colors) && count($colors) > 0)
-                @foreach($colors as $index => $color)
-                <li class="mb-2">
-                    {{-- Dùng class d-flex để căn chỉnh thẳng hàng --}}
-                    <div class="product-color-item d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            {{-- Checkbox Input --}}
-                            {{-- name="colors[]": Để PHP nhận được mảng nhiều màu --}}
-                            <input type="checkbox" 
-                                   class="form-check-input me-2" 
-                                   id="color-{{ $index }}" 
-                                   name="colors[]" 
-                                   value="{{ $color['name'] }}"
-                                   {{-- Logic: Nếu màu này đang có trong URL thì tự động check --}}
-                                   {{ in_array($color['name'], request('colors', [])) ? 'checked' : '' }}>
-                            
-                            {{-- Label (Bấm vào chữ cũng check được) --}}
-                            <label for="color-{{ $index }}" class="text-dark mb-0" style="cursor: pointer;">
-                                {{ $color['name'] }}
-                            </label>
-                        </div>
-                        <span>({{ $color['count'] }})</span>
-                    </div>
-                </li>
-                @endforeach
-            @else
-                <li><span class="text-muted">Không có màu sắc.</span></li>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Sắp xếp theo:</label>
+                <select name="sort" class="form-select" onchange="this.form.submit()">
+                    <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Mới nhất</option>
+                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Giá: Thấp đến Cao</option>
+                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Giá: Cao đến Thấp</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Khoảng giá ($):</label>
+                <div class="d-flex align-items-center mb-2">
+                    <input type="number" name="min_price" class="form-control me-2" placeholder="Min" value="{{ request('min_price') }}" min="0">
+                    <span>-</span>
+                    <input type="number" name="max_price" class="form-control ms-2" placeholder="Max" value="{{ request('max_price') }}" min="0">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-dark w-100 rounded-pill">Áp dụng bộ lọc</button>
+            
+            @if(request()->hasAny(['keyword', 'sort', 'min_price', 'max_price', 'category']))
+                <a href="{{ route('shop.index') }}" class="btn btn-outline-secondary w-100 mt-2 rounded-pill btn-sm">Xóa bộ lọc</a>
             @endif
-        </ul>
+        </form>
     </div>
 
-    {{-- Nút Submit (Bắt buộc phải có nút này để gửi Form đi) --}}
     <div class="mb-4">
-        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">
-            <i class="fa fa-filter me-2"></i> Lọc sản phẩm
-        </button>
+        <h4 class="mb-3">Danh mục</h4>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                <a href="{{ route('shop.index') }}" class="text-decoration-none {{ !request('category') ? 'text-primary fw-bold' : 'text-dark' }}">
+                    Tất cả sản phẩm
+                </a>
+            </li>
+
+            @foreach($categories as $cate)
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                {{-- array_merge: Giữ lại search/sort khi bấm chuyển danh mục --}}
+                <a href="{{ route('shop.index', array_merge(request()->query(), ['category' => $cate->id, 'page' => 1])) }}" 
+                   class="text-decoration-none {{ request('category') == $cate->id ? 'text-primary fw-bold' : 'text-dark' }}">
+                    {{ $cate->name }}
+                </a>
+                <span class="badge bg-secondary rounded-pill">{{ $cate->products_count }}</span>
+            </li>
+            @endforeach
+        </ul>
     </div>
-
-</form>
-{{-- Kết thúc Form --}}
-
-
-{{-- 4. Featured Products (Giữ nguyên - Nằm ngoài Form vì không cần submit) --}}
-<div class="featured-product mb-4">
-    <h4 class="mb-3">Featured products</h4>
-    @if(isset($featuredProducts) && count($featuredProducts) > 0)
-        @foreach($featuredProducts as $fProduct)
-        <div class="featured-product-item d-flex align-items-center mb-3">
-            <div class="rounded me-4" style="width: 100px; height: 100px;">
-                <a href="{{ route('product.detail', ['id' => $fProduct['id']]) }}">
-                    <img src="{{ asset($fProduct['image']) }}" class="img-fluid rounded w-100 h-100" style="object-fit: cover;" alt="">
-                </a>
-            </div>
-            <div>
-                <a href="{{ route('product.detail', ['id' => $fProduct['id']]) }}" class="d-block h6 mb-2 text-dark text-decoration-none">
-                    {{ $fProduct['name'] }}
-                </a>
-                <div class="d-flex mb-2 small text-secondary">
-                    @for($i = 0; $i < 5; $i++)
-                        <i class="fas fa-star {{ $i < ($fProduct['rating'] ?? 5) ? 'text-primary' : '' }}"></i>
-                    @endfor
-                </div>
-                <div class="d-flex mb-2">
-                    <h5 class="fw-bold me-2">${{ number_format($fProduct['price']) }}</h5>
-                </div>
-            </div>
-        </div>
-        @endforeach
-    @endif
 </div>

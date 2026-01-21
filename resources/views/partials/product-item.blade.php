@@ -22,7 +22,7 @@
             @endif
 
             {{-- 3. Nút xem nhanh --}}
-            <div class="product-details position-absolute end-0 top-0 m-4">
+            <div class="product-details position-absolute end-0 top-0">
                 <a href="{{ route('product.detail', ['id' => $product->id]) }}" class="btn btn-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
                     <i class="fa fa-eye text-white"></i>
                 </a>
